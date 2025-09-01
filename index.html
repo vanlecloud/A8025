@@ -109,9 +109,16 @@
 
   <script>
     const audio = document.getElementById("bg-audio");
-      window.addEventListener('click', () => {
-        audio.play();
-      }, { once: true });
+
+audio.play().catch(() => {
+  const playHandler = () => {
+    audio.play();
+    window.removeEventListener('touchstart', playHandler);
+    window.removeEventListener('click', playHandler);
+  }
+  window.addEventListener('touchstart', playHandler, { once: true });
+  window.addEventListener('click', playHandler, { once: true });
+});
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     let W, H;
