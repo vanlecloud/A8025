@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Floating Particle Image with Video Background</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+
+    #bg-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('pic3.jpg'); 
+      background-size: cover;
+      background-position: center;
+      opacity: 0.2;
+      z-index: 0; 
+    }
+
+    #bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    #text-container {
+  position: absolute;
+  bottom: 5%;      
+  right: 2%;        
+  display: flex;
+  flex-direction: column; 
+  align-items: flex-end; 
+  gap: 1px;       
+  z-index: 2;
+}
+
+    #text-img, #text-img2 {
+  width: 30vw;     
+  max-width: 80%;
+  height: auto;
+  filter: drop-shadow(10px 10px 10px rgba(0, 0, 0, 0.7));
+}
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      display: block;
+    }
+
+    @media (max-width: 600px) {
+      #text-img, #text-img2 {
+        width: 50vw;
+      }
+
+      #bg-video {
+        width: 130%;     
+        height: 110%;    
+        top: -20px;      
+        left: -15%;       
+      }
+
+      #bg-overlay {
+        background-image: url('pic2.jpg');
+        opacity: 0.2;
+        background-size: cover; 
+        top: -5%;
+        left: -1%;
+      }
+    }
+  </style>
+</head>
+<body>
+ 
+  <div id="bg-overlay"></div>
+
+  <video id="bg-video" autoplay muted loop playsinline>
+    <source src="vid.mp4" type="video/mp4">
+  </video>
+
+  <div id="text-container">
+    <img id="text-img2" src="80NAM.png" alt="Design Text 2">
+    <img id="text-img" src="text.png" alt="Design Text">
+    
+  </div>
+
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let W, H;
+
+    const imagePath = "xuanhai.png";
+    const pixelSize = 2;
+    const particleRenderSize = 3;
+    const img = new Image();
+    img.src = imagePath;
+
+    function initializeEffect() {
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width = W;
+      canvas.height = H;
+      ctx.clearRect(0, 0, W, H);
+
+      const tempCanvas = document.createElement("canvas");
+      const tempCtx = tempCanvas.getContext("2d");
+
+      let drawWidth, drawHeight, drawX, drawY, moveSpeed;
+
+      if (W >= 500) {
+        drawWidth = W * 2;
+        drawHeight = drawWidth / (img.width / img.height);
+        if (drawHeight > H * 1.5) {
+          drawHeight = H * 1.5;
+          drawWidth = drawHeight * (img.width / img.height);
+        }
+        drawX = (W - drawWidth) / 2;
+        drawY = (H - drawHeight) / 2 + 25; 
+        moveSpeed = 0.05;
+      } else {
+        drawWidth = W * 1.5;
+        drawHeight = drawWidth / (img.width / img.height);
+        if (drawHeight > H * 1.5) {
+          drawHeight = H * 1.5;
+          drawWidth = drawHeight * (img.width / img.height);
+        }
+        drawX = (W - drawWidth) / 2;
+        drawY = H - drawHeight + 400; 
+        moveSpeed = 0.08; 
+      }
+
+      tempCanvas.width = drawWidth;
+      tempCanvas.height = drawHeight;
+
+      tempCtx.drawImage(img, 0, 0, tempCanvas.width, tempCanvas.height);
+      const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height).data;
+
+      const particles = [];
+      for (let y = 0; y < tempCanvas.height; y += pixelSize) {
+        for (let x = 0; x < tempCanvas.width; x += pixelSize) {
+          const index = (y * tempCanvas.width + x) * 4;
+          const r = imageData[index];
+          const g = imageData[index + 1];
+          const b = imageData[index + 2];
+          const a = imageData[index + 3];
+          if (a > 50) {
+            particles.push({
+              x: Math.random() * W,
+              y: Math.random() * H,
+              vx: (Math.random() - 0.5) * 2,
+              vy: (Math.random() - 0.5) * 2,
+              targetX: x + drawX,
+              targetY: y + drawY,
+              size: particleRenderSize,
+              color: `rgba(${r}, ${g}, ${b}, ${a / 255})`,
+              floating: true
+            });
+          }
+        }
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, W, H);
+        let allDone = true;
+        for (let p of particles) {
+          if (p.floating) {
+            allDone = false;
+            p.vx += (Math.random() - 0.5) * 0.2;
+            p.vy += (Math.random() - 0.5) * 0.2;
+
+            const dx = p.targetX - p.x;
+            const dy = p.targetY - p.y;
+            p.vx += dx * moveSpeed;
+            p.vy += dy * moveSpeed;
+
+            p.vx *= 0.6; 
+            p.vy *= 0.6;
+            p.x += p.vx;
+            p.y += p.vy;
+
+            if (Math.abs(dx) < 1 && Math.abs(dy) < 1) {
+              p.x = p.targetX;
+              p.y = p.targetY;
+              p.floating = false;
+            }
+          }
+          ctx.fillStyle = p.color;
+          ctx.fillRect(p.x, p.y, p.size, p.size);
+        }
+
+        if (!allDone) {
+          requestAnimationFrame(animate);
+        } else {
+          ctx.clearRect(0, 0, W, H);
+          ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
+        }
+      }
+
+      animate();
+    }
+
+    img.onload = initializeEffect;
+    window.addEventListener("resize", initializeEffect);
+  </script>
+</body>
+</html>
