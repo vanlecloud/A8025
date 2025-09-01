@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>A80-PKKQ</title>
+  <title>Floating Particle Image with Video Background</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -79,7 +79,7 @@
       }
 
       #bg-overlay {
-        background-image: url('pic2.jpg');
+        background-image: url('pic3.jpg');
         opacity: 0.2;
         background-size: cover; 
         top: -5%;
@@ -108,10 +108,10 @@
   <canvas id="canvas"></canvas>
 
   <script>
-   const audio = document.getElementById("bg-audio");
-  window.addEventListener('click', () => {
-    audio.play();
-  }, { once: true });
+    const audio = document.getElementById("bg-audio");
+      window.addEventListener('click', () => {
+        audio.play();
+      }, { once: true });
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     let W, H;
@@ -151,8 +151,8 @@
           drawHeight = H * 1.5;
           drawWidth = drawHeight * (img.width / img.height);
         }
-        drawX = (W - drawWidth) / 2;
-        drawY = H - drawHeight + 400; 
+        drawX = (W - drawWidth) / 2+10;
+        drawY = H - drawHeight + 150; 
         moveSpeed = 0.08; 
       }
 
@@ -231,5 +231,3 @@
   </script>
 </body>
 </html>
-
-
