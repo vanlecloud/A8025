@@ -89,6 +89,9 @@
   </style>
 </head>
 <body>
+  <audio id="bg-audio" autoplay loop>
+  <source src="audio.mp3" type="audio/mpeg">
+</audio>
  
   <div id="bg-overlay"></div>
 
@@ -105,6 +108,10 @@
   <canvas id="canvas"></canvas>
 
   <script>
+    const audio = document.getElementById("bg-audio");
+      window.addEventListener('click', () => {
+        audio.play();
+      }, { once: true });
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     let W, H;
